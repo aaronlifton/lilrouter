@@ -1,6 +1,6 @@
 (ns lilrouter.test.mock)
 
-(def mock-request
+(defn gen-mock-request [& {:keys [uri] :or {uri "/"}}]
   {:ssl-client-cert nil,
    :protocol "HTTP/1.1",
    :remote-addr "0:0:0:0:0:0:0:1",
@@ -21,7 +21,7 @@
    :content-length nil,
    :content-type nil,
    :character-encoding nil,
-   :uri "/about",
+   :uri uri,
    :server-name "localhost",
    :query-string nil,
    :body nil,

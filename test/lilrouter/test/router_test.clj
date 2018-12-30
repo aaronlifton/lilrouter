@@ -13,6 +13,7 @@
 
 
 ; how does one run a single test?
+; TODO: clear router state before every test
 ; (defn test-ns-hook []
 ;   (do
 ;     (print 1)
@@ -55,7 +56,7 @@
 
 (deftest render-index-page
   (testing "index page should render hello world"
-    (let [res (demo-routes/index mock/mock-request)]
+    (let [res (demo-routes/index (mock/gen-mock-request))]
       (str/includes? (:body res) "Hello world"))))
 
 (deftest coercer
@@ -158,3 +159,15 @@
       (do
         (swap! settings assoc :logger mylogger)
         (is (= (router/log "hello") "foobar"))))))
+
+(deftest custom-404
+  (testing "custom 404 page should be called
+    when page not found"
+      ; route set with only 404
+    (let [my404 (fn [req] "foobar")
+          routes (#'router/map-with-info {"404" my404})]
+      (do
+        (swap! router/state assoc :routes routes)
+        (let [res (router/handle-req
+                (mock/gen-mock-request) routes)]
+        (is (= res "foobar")))))))

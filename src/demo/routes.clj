@@ -20,8 +20,14 @@
               "You're looking at post #" (:id params) "<br>"
               "Querystring: " (:query-params @router/state))}))
 
+(defn my404 [req]
+  {:status 404
+    :headers {"Content-Type" "text/html"}
+    :body "custom 404"})
+
 (router/set-routes {
   "/" index
   "/about" about
   "/posts/:id" show-post
+  "404" my404
   })

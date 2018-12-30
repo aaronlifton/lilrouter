@@ -89,11 +89,11 @@
          (map #(str/split % #"="))
          (reduce (fn [a [k v]]
            (cond
-            (re-matches obj-param-regex k)
-              (util/deep-merge a (coerce-map k v))
-            :else
-              (assoc a (keyword k)
-                (parse-query-param v))))
+             (re-matches obj-param-regex k)
+               (util/deep-merge a (coerce-map k v))
+             :else
+               (assoc a (keyword k)
+                 (parse-query-param v))))
            {})
          (into {}))))
 
@@ -113,9 +113,8 @@
   (if-let [route (get (:routes @state) "404")]
     (if-let [handler (:handler route)]
       (handler request)
-      (default404 request)
-      ))
-    (default404 request))
+      (default404 request))
+    (default404 request)))
 
 ; path parser/matcher
 (defn- is-route-param [part]
@@ -216,17 +215,16 @@
   (when-let [logger (get-logger)]
     (let [log-req (get-in @settings [:log :request])]
       (do
-        (prn log-req)
         (log-req logger)))))
 
-(defn handle-req [request]
+(defn handle-req [request & [routes]]
   "public request handler function that you
   `request` should be an incoming jetty request"
   (swap! state assoc :current-path (:uri request))
   (swap! state assoc :query-params
     (parse-query-string (:query-string request)))
   (run-req-logger)
-  (if-let [handler (match-handler (:current-path @state))]
+  (if-let [handler (match-handler (:current-path @state) routes)]
     (do (log (str "Using handler: " handler))
         (handler request))
     (handle404 request)))

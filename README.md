@@ -34,10 +34,16 @@ See `src/demo/routes`.
               "You're looking at post #" (:id params) "<br>"
               "Querystring: " (:query-params @router/state))}))
 
+(defn my404 [req]
+  {:status 404
+    :headers {"Content-Type" "text/html"}
+    :body "4̶͈̫̘͖̲̳̌̈̑0̸͉̠̘͓͎͇́͐̈͗͆̑͘͝͝4̵͓͔̀̈̀͒̽̍̓͑̌͘"})
+
 (router/set-routes {
   "/" index
   "/about" about
   "/posts/:id" show-post
+  "404" my404
   })
 
 ; To run: lein ring server 9001
@@ -98,6 +104,7 @@ by inserting a keyword in it:
 ## TODO
 - add support for nested routes
 - change data structure routes are stored in
+- implement test-ns-hook to clear router state before every test
 
 ## License
 MIT License

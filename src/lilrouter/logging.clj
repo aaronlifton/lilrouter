@@ -26,8 +26,8 @@
     (if logger
       logger
       (do
-        (prn (str "Warning: cannot find logger.\n
-          Current setting: " (:logger @settings)))
+        (clojure-log/warn (str "Cannot find logger.\n"
+          "Current setting: " (:logger @settings)))
         identity))))
 
 ; /logging
