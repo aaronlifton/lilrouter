@@ -87,10 +87,10 @@ by inserting a keyword in it:
 2. See testing section
 
 ## Testing
-You can run tests with leiningin by running `lein test`
-You can run tests in the REPL using `lein with-profile +test repl`
-To run all tests, run `run-all-tests`
-To run router tests, run `run-router-tests`
+- You can run tests with leiningin by running `lein test`
+- You can run tests in the REPL using `lein with-profile +test repl`
+- To run all tests, run `run-all-tests`
+- To run router tests, run `run-router-tests`
 
 ## Demo
 - You can run the demo by running `lein ring server 9001`
@@ -104,14 +104,3 @@ To run router tests, run `run-router-tests`
 MIT License
 
 Copyright © 2018 - 2019 Aaron Lifton
-
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
