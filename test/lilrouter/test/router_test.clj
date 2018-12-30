@@ -1,6 +1,7 @@
 (ns lilrouter.test.router-test
   (:require [lilrouter.test :as t]
             [lilrouter.router :as router]
+            [lilrouter.settings :refer [settings]]
             [lilrouter.test.mock :as mock]
             [clojure.test :refer :all]
             [clojure.string :as str]
@@ -155,5 +156,5 @@
   (testing "custom logger should work"
     (letfn [(mylogger [x] "foobar")]
       (do
-        (swap! router/settings assoc :logger mylogger)
+        (swap! settings assoc :logger mylogger)
         (is (= (router/log "hello") "foobar"))))))

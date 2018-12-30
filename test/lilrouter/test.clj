@@ -1,7 +1,7 @@
 (ns lilrouter.test
   (:require [clojure.test :refer :all]
             [lilrouter.test.mock :as mock]
-            [lilrouter.router :refer [settings]]))
+            [lilrouter.settings :refer [settings]]))
 
 (defonce test-holder (atom []))
 

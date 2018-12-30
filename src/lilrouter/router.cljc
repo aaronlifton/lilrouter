@@ -1,59 +1,21 @@
 (ns lilrouter.router
   (:require [clojure.string :as str]
-            [lilrouter.util :as util]
-            [clojure.tools.logging :as clojure-log]))
+            [lilrouter.logging :refer [get-logger]]
+            [lilrouter.settings :refer [settings]]
+            [lilrouter.util :as util]))
 
 (defonce state (atom {}))
 
 (defonce cache (atom {}))
 
 ; logging
-(defn- default-log-request [logger]
+
+(defn default-log-request [logger]
+  "Logger is passed in as arg"
   (logger (:current-path @state)))
-
-(def default-settings
-  {:env "dev"
-   :cache-limit 200
-   :logger 'default-logger
-   :log {:request default-log-request}})
-
-(def settings
-  "Router settings.
-  Logger should be a symbol that can be
-  resolved to a var, a var itself,
-  or a function."
-  (atom default-settings))
-
-(defmacro apply-log-info [& args]
-  `(clojure-log/info ~@args))
-
-(defn default-logger [& args]
-  (case {:env @settings}
-    "dev" (apply-log-info args)
-    "test" identity))
-
-(defn- resolve-logger [logger]
-  "Tries to resolve a logger fn from
-  a var or symbol. Otherwise logger
-  must implement Fn."
-  (cond
-    (var? logger) (var-get logger)
-    (symbol? logger) (resolve logger)
-    :else (if (fn? logger) logger nil)))
-
-(defn get-logger []
-  (let [logger (resolve-logger (:logger @settings))]
-    (if logger
-      logger
-      (do
-        (prn (str "Warning: cannot find logger.\n
-          Current setting: " (:logger @settings)))
-        identity))))
 
 (defn log [msg]
   ((get-logger) msg))
-
-; /logging
 
 ; regexs
 (def word-regex #"^(\w+)$")

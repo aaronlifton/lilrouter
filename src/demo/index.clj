@@ -1,6 +1,7 @@
 (ns demo.index
   (:require [clojure.tools.logging :as log]
             [clojure.pprint :refer [pprint]]
+            [lilrouter.settings :refer [settings]]
             [lilrouter.router :as router]))
 
 (use 'demo.routes)
@@ -12,7 +13,7 @@
                 (count @router/cache)))
     (log/info (with-out-str (pprint msg)))))
 
-(swap! router/settings assoc
+(swap! settings assoc
   :logger my-logger)
 
 (defn handler [request]

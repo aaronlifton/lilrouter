@@ -49,7 +49,9 @@ See `src/demo/routes`.
 
 ```
 (defn my-logger [msg]
-    (pprint (str "hello world" msg)))
+  "Logger which will say hello world
+  before every message."
+  (pprint (str "hello world" msg)))
 
 (swap! router/settings assoc :logger my-logger)
 ```
@@ -85,6 +87,7 @@ by inserting a keyword in it:
 2. See testing section
 
 ## Testing
+You can run tests with leiningin by running `lein test`
 You can run tests in the REPL using `lein with-profile +test repl`
 To run all tests, run `run-all-tests`
 To run router tests, run `run-router-tests`
