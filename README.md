@@ -3,17 +3,17 @@
 A simple clojure router
 
 ## Setup
-1. run dev server
-  - `lein ring server 9001`
-2. run app
-  - `lein run`
+1. Package coming soon
 
 ## Usage
+
+### Defining routes
+
 See `src/demo/routes`.
+
 ```
 (ns demo.routes
-  (:require [lilrouter.router :as router]
-            [clojure.tools.logging :as log]))
+  (:require [lilrouter.router :as router]))
 
 (defn index [request]
   {:status 200
@@ -28,19 +28,40 @@ See `src/demo/routes`.
 
 (defn show-post [req]
   (let [params (:match-params @router/state)]
-    (log/info params)
     {:status 200
       :headers {"Content-Type" "text/html"}
-      :body (str "params are " params "<br>"
-              "you're looking at post #" (:id params) "<br>"
-              "querystring: " (:query-params @router/state))}))
+      :body (str "Params: " params "<br>"
+              "You're looking at post #" (:id params) "<br>"
+              "Querystring: " (:query-params @router/state))}))
 
 (router/set-routes {
   "/" index
   "/about" about
   "/posts/:id" show-post
   })
+
+; To run: lein ring server 9001
 ```
+
+### Logging
+
+- You can plug in your own logger
+
+```
+(defn my-logger [msg]
+    (pprint (str "hello world" msg)))
+
+(swap! router/settings assoc :logger my-logger)
+```
+
+### Environment support
+
+```
+
+(swap! router/settings assoc :env "dev")
+```
+- Logging is disabled in the `test` environment.
+
 
 ## Query strings
 - Complex query strings are supported
@@ -53,15 +74,24 @@ See `src/demo/routes`.
   - IPersistentMap
 
 ## Route params
+- Route params are always read as strings
+- You can define your route as having a named route param
+by inserting a keyword in it:
+  - "/posts/:id"
 
+## Dev setup
+1. Run dev server
+  - `lein ring server 9001`
+2. See testing section
 
 ## Testing
-You can run tests in the REPL using `lein with-profile +test repl`.
-To run all tests, run `run-all-tests`.
-To run router tests, run `run-router-tests`.
+You can run tests in the REPL using `lein with-profile +test repl`
+To run all tests, run `run-all-tests`
+To run router tests, run `run-router-tests`
 
 ## Demo
-You can run the demo by running `lein ring server 9001`
+- You can run the demo by running `lein ring server 9001`
+- You can view the demo code in `src/demo`
 
 ## TODO
 - add support for nested routes

@@ -13,5 +13,3 @@
     (if (some identity vs)
       (reduce #(rec-merge %1 %2) v vs)
       (last vs))))
-
-; (find-indices #(= % \]) "[b][1][d]")

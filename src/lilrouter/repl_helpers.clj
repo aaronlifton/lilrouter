@@ -1,7 +1,8 @@
 (ns lilrouter.repl-helpers)
-; for working on router
 
 (defn reload-router []
+  "Reloads router source.
+  Useful for working on router"
   (do
     (require 'lilrouter.router)
     (use 'lilrouter.router :reload)

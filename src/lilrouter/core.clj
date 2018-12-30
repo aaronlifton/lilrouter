@@ -3,7 +3,7 @@
             [clojure.pprint :refer [pprint]]
             [lilrouter.router :as router]))
 
-(use 'lilrouter.repl-helpers) ; this loads repl helprs
+(use 'lilrouter.repl-helpers)
 (use 'demo.routes)
 
 (use 'ring.adapter.jetty)
