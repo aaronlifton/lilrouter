@@ -11,7 +11,7 @@ A simple clojure router
 
 See `src/demo/routes`.
 
-```
+```clojure
 (ns demo.routes
   (:require [lilrouter.router :as router]))
 
@@ -47,7 +47,7 @@ See `src/demo/routes`.
 
 - You can plug in your own logger
 
-```
+```clojure
 (defn my-logger [msg]
   "Logger which will say hello world
   before every message."
@@ -58,8 +58,7 @@ See `src/demo/routes`.
 
 ### Environment support
 
-```
-
+```clojure
 (swap! router/settings assoc :env "dev")
 ```
 - Logging is disabled in the `test` environment.
