@@ -9,7 +9,7 @@
                   [ring/ring-devel "1.6.3"]
                   [org.clojure/tools.logging "0.4.1"]]
   :plugins [[lein-ring "0.12.1"]]
-  :repl-options {:init-ns lilrouter.core
+  :repl-options {:init-ns lilrouter.router
                  :init (use 'lilrouter.repl-helpers)}
   :ring {:handler demo.index/handler}
   :profiles {:test {:main lilrouter.test

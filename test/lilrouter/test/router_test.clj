@@ -20,12 +20,21 @@
 ;     (print @t/test-holder)
 ;     (map (fn [x] ((var-get x)) @t/test-holder))))
 
+(defonce test-state (atom {}))
+
+(def myrouter
+  "Test router instance used for each test.
+  Per-request routing will be tested without
+  this router, of course."
+  (router/create-router test-state))
+
 (defmacro create-test-route [path expected]
   (let [test-name (str "does the route " path " work?")]
     `(deftest ~(gensym "test-route")
       (testing ~test-name
-        (is (= (#'router/match-handler ~path) ~expected))))))
-
+        (is (= (:handler (#'router/match-handler
+                            ~path (:routes @router/state)))
+               ~expected))))))
 
 (defmacro defroutetest [path expected]
   (let [res `(create-test-route ~path ~expected)]
@@ -56,7 +65,7 @@
 
 (deftest render-index-page
   (testing "index page should render hello world"
-    (let [res (demo-routes/index (mock/gen-mock-request))]
+    (let [res (demo-routes/index (mock/gen-mock-request) {})]
       (str/includes? (:body res) "Hello world"))))
 
 (deftest coercer
@@ -109,7 +118,7 @@
             regex (#'router/gen-regex-for-route routepath)
             routes {"/posts/:id" {:path "/posts/:id" :pattern regex}}
             path "/posts/1"
-            res (#'router/match-route path routes)]
+            res (:route (#'router/match-route path routes))]
         (is (= routepath (:path res)))))))
 
 (defmacro defpathmatchtest [routepath reqpath]
@@ -119,7 +128,7 @@
     `(deftest ~(gensym "matches-route-with-regex")
       (testing ~test-name
         (let [routes# (#'router/map-with-info {~routepath ~handler})
-              route# (#'router/match-route ~reqpath routes#)
+              route# (:route (#'router/match-route ~reqpath routes#))
               match# (:path route#)]
           (is (= match#
                ~routepath)))))))
@@ -133,7 +142,7 @@
     generated regex"
     (let [routes (#'router/map-with-info {"/posts/:id" show-post})
           path "/posts/2"]
-          (is (= (#'router/match-handler path routes)
+          (is (= (:handler (#'router/match-handler path routes))
                  show-post)))))
 
 (deftest route-not-cached
@@ -164,10 +173,12 @@
   (testing "custom 404 page should be called
     when page not found"
       ; route set with only 404
-    (let [my404 (fn [req] "foobar")
+    (let [my404 (fn [req state] "foobar")
           routes (#'router/map-with-info {"404" my404})]
       (do
+        ; replace routes
         (swap! router/state assoc :routes routes)
         (let [res (router/handle-req
-                (mock/gen-mock-request) routes)]
+                (mock/gen-mock-request
+                  :uri "/notarealpath"))]
         (is (= res "foobar")))))))

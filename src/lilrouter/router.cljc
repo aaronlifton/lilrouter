@@ -4,15 +4,32 @@
             [lilrouter.settings :refer [settings]]
             [lilrouter.util :as util]))
 
-(defonce state (atom {}))
+; "Internal route state.
+; Used to store routes,
+; and cached paths."
+(defonce state
+  (atom {}))
 
-(defonce cache (atom {}))
+; "Used to store cached routes,
+; so no regex or algos have to be run
+; on subsequent requests to the
+; same paths"
+(defonce cache
+  (atom {}))
+
+; exposed setting fns
+
+(defn set-env [env]
+  (swap! settings assoc :env env))
+
+(defn set-logger [logger]
+  (swap! settings assoc :logger logger))
 
 ; logging
 
-(defn default-log-request [logger]
+(defn default-log-request [logger state]
   "Logger is passed in as arg"
-  (logger (:current-path @state)))
+  (logger (:current-path state)))
 
 (defn log [msg]
   ((get-logger) msg))
@@ -100,21 +117,21 @@
 ; /param parser
 
 ; default routes
-(defn default404 [request]
+(defn default404 [& request]
   "default 404 route"
   {:status 404
    :headers {"Content-Type" "text/html"}
    :body "404"})
 
-(defn handle404 [request]
+(defn handle404 [request request-state]
   "404 handler. If you set a custom 404,
   it uses that. Otherwise uses the default 404 route.
   See `default404`"
   (if-let [route (get (:routes @state) "404")]
     (if-let [handler (:handler route)]
-      (handler request)
+      (handler request request-state)
       (default404 request))
-    (default404 request)))
+    (default404 request request-state)))
 
 ; path parser/matcher
 (defn- is-route-param [part]
@@ -130,17 +147,6 @@
     (->> (map vector params matches)
          (into {}))))
 
-(defn- match-route [path routes]
-  "Find the route whose regex matches the
-  given path"
-  (if-let [match (first (filter (fn [[p r]]
-            (when (contains? r :pattern)
-              (if-let [matches (re-matches (:pattern r) path)]
-                (swap! state assoc :match-params
-                  (get-path-param-mapping r (rest matches))))))
-            routes))]
-        (val match)))
-
 (defn- cache-route [path route]
   (do
     (when (>= (count @cache)
@@ -148,15 +154,31 @@
       (swap! cache empty))
     (swap! cache assoc path route)))
 
-(defn match-handler [path & [routes]]
-  (let [routes (or routes (:routes @state))
-        cached-route (get @cache path)]
+(defn- match-route [path routes]
+  "Find the route whose regex matches the
+  given path"
+  (let [matches (atom [])]
+    (when-let [route (first (filter (fn [[p r]]
+                (when (contains? r :pattern)
+                  (reset! matches
+                    (re-matches (:pattern r) path))))
+                routes))]
+          {:route (val route)
+           :extra-state
+             {:path-params
+               (get-path-param-mapping
+                  (val route) (rest @matches))}})))
+
+(defn match-handler [path routes]
+  (let [cached-route (get @cache path)]
     (if cached-route
       (:handler cached-route))
-      (if-let [route (match-route path routes)]
+      (when-let [match-data
+        (match-route path routes)]
         (do
-          (cache-route path route)
-          (:handler route)))))
+          (cache-route path (:route match-data))
+          {:handler (:handler (:route match-data))
+           :extra-state (:extra-state match-data)}))))
 
 (defn- gen-regex-for-route [route]
   "Replaces parts of the path denoted
@@ -217,14 +239,46 @@
       (do
         (log-req logger)))))
 
-(defn handle-req [request & [routes]]
+; main handler fn
+(defn handle-req [request]
   "public request handler function that you
   `request` should be an incoming jetty request"
-  (swap! state assoc :current-path (:uri request))
-  (swap! state assoc :query-params
-    (parse-query-string (:query-string request)))
-  (run-req-logger)
-  (if-let [handler (match-handler (:current-path @state) routes)]
-    (do (log (str "Using handler: " handler))
-        (handler request))
-    (handle404 request)))
+  (let [routes (:routes @state)
+        current-path (:uri request)
+        request-state {:current-path current-path
+                       :query-params
+                          (parse-query-string
+                            (:query-string request))}]
+    (run-req-logger)
+    (if-let [match-data (match-handler current-path routes)]
+      (let [handler (:handler match-data)
+            extra-state (:extra-state match-data)
+            request-state (merge request-state extra-state)]
+        (do (log (str "Using handler: " handler))
+            (handler request request-state)))
+      (handle404 request request-state))))
+
+
+(defprotocol IRouter
+  (set-state [_ k v])
+  (routes [_]))
+
+; per-request router instance
+(defrecord Router [state]
+  IRouter
+  (set-state [t k v] (swap! (:state t) assoc k v))
+  (routes [_] (:routes state)))
+
+
+; (defprotocol Meow
+;   (meow [_ t]))
+; (defrecord Cat [name]
+;   Meow
+;   (meow [_ t] (str name " says meow with type " t)))
+
+(defn create-router [state]
+  "Creates a router instance.
+  Each request requires an instance of
+  a Router, so that each request can have its
+  own state."
+  (->Router (or state (atom {}))))

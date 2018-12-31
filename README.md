@@ -15,26 +15,26 @@ See `src/demo/routes`.
 (ns demo.routes
   (:require [lilrouter.router :as router]))
 
-(defn index [request]
+(defn index [req state]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "Hello world"})
 
-(defn about [request]
+(defn about [req state]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "Welcome to about page"})
 
-
-(defn show-post [req]
-  (let [params (:match-params @router/state)]
+(defn show-post [req state]
+  (prn state)
+  (let [params (:path-params state)]
     {:status 200
       :headers {"Content-Type" "text/html"}
       :body (str "Params: " params "<br>"
               "You're looking at post #" (:id params) "<br>"
-              "Querystring: " (:query-params @router/state))}))
+              "Querystring: " (:query-params state))}))
 
-(defn my404 [req]
+(defn my404 [req state]
   {:status 404
     :headers {"Content-Type" "text/html"}
     :body "4̶͈̫̘͖̲̳̌̈̑0̸͉̠̘͓͎͇́͐̈͗͆̑͘͝͝4̵͓͔̀̈̀͒̽̍̓͑̌͘"})
@@ -54,18 +54,22 @@ See `src/demo/routes`.
 - You can plug in your own logger
 
 ```clojure
+(require '[lilrouter.router :as router])
+
 (defn my-logger [msg]
   "Logger which will say hello world
   before every message."
   (pprint (str "hello world" msg)))
 
-(swap! router/settings assoc :logger my-logger)
+(router/set-logger mylogger)
 ```
 
 ### Environment support
 
 ```clojure
-(swap! router/settings assoc :env "dev")
+(require '[lilrouter.router :as router])
+
+(router/set-env "dev")
 ```
 - Logging is disabled in the `test` environment.
 

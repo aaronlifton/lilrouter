@@ -2,7 +2,8 @@
   (:require [clojure.tools.logging :as log]
             [clojure.pprint :refer [pprint]]
             [lilrouter.settings :refer [settings]]
-            [lilrouter.router :as router]))
+            [lilrouter.router :as router
+                              :refer (->Router)]))
 
 (use 'demo.routes)
 (use 'ring.adapter.jetty)
@@ -13,12 +14,11 @@
                 (count @router/cache)))
     (log/info (with-out-str (pprint msg)))))
 
-(swap! settings assoc
-  :logger my-logger)
+(router/set-logger my-logger)
 
 (defn handler [request]
-  (router/handle-req request))
+  (let [router-instance (->Router (atom {}))]
+    (router/handle-req request)))
 
-(defn -main
-  [& args]
+(defn -main [& args]
   (run-jetty handler {:port 9001}))

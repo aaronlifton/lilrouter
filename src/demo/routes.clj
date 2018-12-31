@@ -1,26 +1,27 @@
 (ns demo.routes
   (:require [lilrouter.router :as router]))
 
-(defn index [request]
+(defn index [req state]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "Hello world"})
 
-(defn about [request]
+(defn about [req state]
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "Welcome to about page"})
 
 
-(defn show-post [req]
-  (let [params (:match-params @router/state)]
+(defn show-post [req state]
+  (prn state)
+  (let [params (:path-params state)]
     {:status 200
       :headers {"Content-Type" "text/html"}
       :body (str "Params: " params "<br>"
               "You're looking at post #" (:id params) "<br>"
-              "Querystring: " (:query-params @router/state))}))
+              "Querystring: " (:query-params state))}))
 
-(defn my404 [req]
+(defn my404 [req state]
   {:status 404
     :headers {"Content-Type" "text/html"}
     :body "custom 404"})

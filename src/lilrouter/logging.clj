@@ -8,7 +8,7 @@
   `(clojure-log/info ~@args))
 
 (defn default-logger [& args]
-  (case {:env @settings}
+  (case (:env @settings)
     "dev" (apply-log-info args)
     "test" identity))
 
