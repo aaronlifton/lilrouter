@@ -269,13 +269,6 @@
   (set-state [t k v] (swap! (:state t) assoc k v))
   (routes [_] (:routes state)))
 
-
-; (defprotocol Meow
-;   (meow [_ t]))
-; (defrecord Cat [name]
-;   Meow
-;   (meow [_ t] (str name " says meow with type " t)))
-
 (defn create-router [state]
   "Creates a router instance.
   Each request requires an instance of
